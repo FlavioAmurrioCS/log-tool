@@ -1,0 +1,7 @@
+autopep8
+covdefaults
+coverage
+git+https://github.com/weditor/PyFunctional.git@typing
+pre-commit
+ptpython
+pytest
