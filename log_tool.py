@@ -22,7 +22,7 @@ from typing_extensions import TypedDict
 warnings.simplefilter('ignore', UnsafeLoaderWarning)
 
 
-console = Console(highlight=False)
+LOG_TOOL_CONSOLE = Console(highlight=False, soft_wrap=True)
 
 app = typer.Typer()
 
@@ -182,7 +182,7 @@ def search(
             line = pat.sub(color, line)
         return line
 
-    stream.map(__inner__).for_each(console.print)
+    stream.map(__inner__).for_each(LOG_TOOL_CONSOLE.print)
 
 
 if __name__ == '__main__':
