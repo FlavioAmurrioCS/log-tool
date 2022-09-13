@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import itertools
 import re
-import sys
 import typing
 import warnings
 from typing import Callable
@@ -53,7 +52,7 @@ class LogTool():
 
     def __init__(self, log_tool_config_file: str, logs: Sequence[str]) -> None:
         self.config_file = log_tool_config_file
-        self.log_files = logs
+        self.log_files = [('/dev/stdin' if file == '-' else file) for file in logs]
         self.log_pattern = ''
         self.reload_config()
 
@@ -72,7 +71,7 @@ class LogTool():
 
             self.stream = (
                 seq(self.log_files)
-                .flat_map(lambda file: seq.open(file, errors='ignore', encoding='utf-8') if file not in ('/dev/stdin', '-') else seq(sys.stdin))
+                .flat_map(lambda file: seq.open(file, errors='ignore', encoding='utf-8'))
                 .map(line_to_logline)
                 .filter(lambda x: x is not None)
                 .map(cast_to_non_none)
@@ -130,21 +129,24 @@ def pretty_search(
 def search(
     search_patterns: List[str],
     ignore_case: bool = typer.Option(False, '--ignore-case', '-i', help='Perform case insensitive matching.'),
-    files: List[str] = typer.Option([], '--file', '-f', help='Files to search.'),
+    enable_regex: bool = typer.Option(False, '--regex', '-E', help='Enable Regex.'),
+    files: List[str] = typer.Option(['/dev/stdin'], '--file', '-f', help='Files to search.'),
     ignore_patterns: List[str] = typer.Option([], '-v', help='Specify ignore pattern'),
 ) -> None:
     """Search and color text files"""
+    files = [('/dev/stdin' if file == '-' else file) for file in files]
     stream: FunctionalStream[str] = (
-        seq(files or ['/dev/stdin'])
+        seq(files)
         .flat_map(
-            lambda file: seq.open(file, errors='ignore', encoding='utf-8')
-            if file not in ('/dev/stdin', '-')
-            else seq(sys.stdin),
+            lambda file: seq.open(file, errors='ignore', encoding='utf-8'),
         )
     )
     search_patterns.sort(key=len, reverse=True)
+    if not enable_regex:
+        search_patterns = [re.escape(x) for x in search_patterns]
     flag = re.IGNORECASE if ignore_case else 0
-    pat = re.compile('|'.join(search_patterns), flag)
+    joined_search_pattern: str = '|'.join(search_patterns)
+    pat = re.compile(joined_search_pattern, flag)
 
     stream = stream.filter(lambda x: bool(pat.search(x))).map(str.strip)
 
