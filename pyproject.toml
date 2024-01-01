@@ -27,10 +27,12 @@ classifiers = [
 dependencies = [
   "pyfunctional",
   "rich",
-  "ruamel.yaml",
   "typer",
   "typing-extensions",
 ]
+
+[project.scripts]
+log-tool = "log_tool:app_logtool"
 
 [project.urls]
 Documentation = "https://github.com/FlavioAmurrioCS/log-tool#readme"
