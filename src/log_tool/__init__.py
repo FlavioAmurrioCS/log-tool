@@ -1,19 +1,6 @@
 # flake8: noqa: E501
 from __future__ import annotations
 
-try:
-    from setuptools_scm import get_version
-
-    __version__ = get_version(root="..", relative_to=__file__)
-except (ImportError, LookupError):
-    try:
-        from log_tool._version import (  # type: ignore[no-redef,unused-ignore] # noqa: F401
-            __version__,  #
-        )
-    except ModuleNotFoundError:
-        msg = "dev-toolbox is not correctly installed. Please install it with pip."
-        raise RuntimeError(msg)  # noqa: B904, TRY200
-
 import itertools
 import logging
 import os
@@ -23,13 +10,13 @@ import typing
 from configparser import ConfigParser
 from dataclasses import dataclass
 from importlib.resources import path as resource_path
+from typing import TYPE_CHECKING
 from typing import Callable
 from typing import Iterable
 from typing import List
 from typing import NamedTuple
 from typing import Optional
 from typing import Sequence
-from typing import TYPE_CHECKING
 from typing import TypeVar
 
 import typer
@@ -37,11 +24,11 @@ from rich import print as rprint
 from rich.console import Console
 from typing_extensions import TypedDict
 
-
 if TYPE_CHECKING:
-    from functional.pipeline import Sequence as FunctionalStream
     from _typeshed import FileDescriptorOrPath
+    from functional.pipeline import Sequence as FunctionalStream
 
+logger = logging.getLogger(__name__)
 
 LOG_TOOL_CONSOLE = Console(highlight=False, soft_wrap=True)
 
@@ -67,7 +54,7 @@ class LogToolConfig(TypedDict):
 
 
 def cast_to_non_none(item: _T | None) -> _T:
-    return typing.cast(_T, item)
+    return typing.cast("_T", item)
 
 
 @dataclass
@@ -81,7 +68,7 @@ class LogToolConfigParser:
         if os.path.exists(config_file):
             self.config.read(config_file)
         else:
-            logging.warning("Config file %s does not exist.", config_file)
+            logger.warning("Config file %s does not exist.", config_file)
 
     def get(self, section_name: str) -> LogToolConfig:
         if section_name not in self.config.sections():
@@ -92,14 +79,16 @@ class LogToolConfigParser:
 
         return {
             "log_pattern": (
-                selection["log_pattern"]
-                if "log_pattern" in selection
-                else r"(?P<TIMESTAMP>^[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}) (?P<LOGLEVEL>[A-Z]+)[ ]*:[\.]+(?P<CLASS>[^:]+): (?P<MSG>.*)"
+                selection.get(
+                    "log_pattern",
+                    r"(?P<TIMESTAMP>^[0-9]{2}/[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}) (?P<LOGLEVEL>[A-Z]+)[ ]*:[\.]+(?P<CLASS>[^:]+): (?P<MSG>.*)",
+                )
             ),
             "print_format": (
-                selection["print_format"]
-                if "print_format" in selection
-                else r"[cyan]{TIMESTAMP} [yellow][{LOGLEVEL: ^7}] [red]{CLASS: >22}: [reset]{MSG}"
+                selection.get(
+                    "print_format",
+                    r"[cyan]{TIMESTAMP} [yellow][{LOGLEVEL: ^7}] [red]{CLASS: >22}: [reset]{MSG}",
+                )
             ),
             "loglevel": (
                 selection["loglevel"].splitlines()
