@@ -203,7 +203,7 @@ class LogTool:
 
 @app_logtool.command()
 def pretty_search(
-    ini_config: Optional[str] = None,  # noqa: UP007
+    ini_config: Optional[str] = None,
     files: List[str] = typer.Option(  # noqa: UP006, B008
         [],
         "--file",
