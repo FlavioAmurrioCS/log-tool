@@ -12,11 +12,9 @@ from dataclasses import dataclass
 from importlib.resources import path as resource_path
 from typing import TYPE_CHECKING
 from typing import Callable
-from typing import Iterable
-from typing import List
+from typing import List  # noqa: UP035
 from typing import NamedTuple
 from typing import Optional
-from typing import Sequence
 from typing import TypeVar
 
 import typer
@@ -25,6 +23,9 @@ from rich.console import Console
 from typing_extensions import TypedDict
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from collections.abc import Sequence
+
     from _typeshed import FileDescriptorOrPath
     from functional.pipeline import Sequence as FunctionalStream
 
@@ -203,8 +204,8 @@ class LogTool:
 
 @app_logtool.command()
 def pretty_search(
-    ini_config: Optional[str] = None,  # noqa: UP007
-    files: List[str] = typer.Option(  # noqa: UP006, B008
+    ini_config: Optional[str] = None,  # noqa: UP045
+    files: List[str] = typer.Option(  # noqa: B008, UP006
         [],
         "--file",
         "-f",
@@ -231,8 +232,8 @@ def search(
         help="Perform case insensitive matching.",
     ),
     enable_regex: bool = typer.Option(False, "--regex", "-E", help="Enable Regex."),  # noqa: FBT001, FBT003
-    files: List[str] = typer.Option(["/dev/stdin"], "--file", "-f", help="Files to search."),  # noqa: UP006, B008
-    ignore_patterns: List[str] = typer.Option([], "-v", help="Specify ignore pattern"),  # noqa: UP006, B008
+    files: List[str] = typer.Option(["/dev/stdin"], "--file", "-f", help="Files to search."),  # noqa: B008, UP006
+    ignore_patterns: List[str] = typer.Option([], "-v", help="Specify ignore pattern"),  # noqa: B008, UP006
 ) -> None:
     """Search and color text files."""
     from functional import seq
